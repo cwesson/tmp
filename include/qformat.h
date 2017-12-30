@@ -2,21 +2,29 @@
 #include "cppcompat.h"
 #include <cmath>
 
-template<unsigned int W, unsigned int D, typename S=unsigned>
+template<unsigned int W, unsigned int D, typename Sign=signed>
 class qformat {
 	private:
-		typedef qformat<W, D> qformatT;
-		typedef typename minint_bits<W+D>::DataType storageT;
-		typedef typename minint_bits<(W+D)*2>::DataType doubleT;
+		typedef qformat<W, D, Sign> qformatT;
+		
+		template<unsigned int w, unsigned int d, typename s>
+		struct _bits;
+		template<unsigned int w, unsigned int d>
+		struct _bits<w, d, signed> { enum { result = W+D+1 }; };
+		template<unsigned int w, unsigned int d>
+		struct _bits<w, d, unsigned> { enum { result = W+D }; };
+		
+		typedef typename minint_bits<_bits<W,D,Sign>::result>::DataType storageT;
+		typedef typename minint_bits<(_bits<W,D,Sign>::result)*2>::DataType doubleT;
 	
 	public:
-		qformat<W, D>():
+		qformat<W, D, Sign>():
 			value(0) {}
-		qformat<W, D>(unsigned int v):
+		qformat<W, D, Sign>(unsigned int v):
 			value(v << D) {}
-		explicit qformat<W, D>(double v):
+		explicit qformat<W, D, Sign>(double v):
 			value(std::round(v * smath<2,D>::pow)) {}
-		qformat<W, D>(const qformat<W, D>& o):
+		qformat<W, D, Sign>(const qformat<W, D>& o):
 			value(o.value) {}
 			
 		/**
@@ -116,10 +124,10 @@ class qformat {
 		storageT value;
 };
 
-typedef qformat<15,1> Q15_1;
-typedef qformat<3,13> Q3_13;
-typedef qformat<7,1>  Q7_1;
+typedef qformat<15,1, unsigned> UQ15_1;
+typedef qformat<7,1, unsigned>  UQ7_1;
+typedef qformat<3,12, signed> Q3_12;
 
-static_assert(sizeof(Q15_1) == 2, "sizeof(Q15_1) incorrect");
-static_assert(sizeof(Q7_1) == 1, "sizeof(Q7_1) incorrect");
+static_assert(sizeof(UQ15_1) == 2, "sizeof(UQ15_1) incorrect");
+static_assert(sizeof(UQ7_1) == 1, "sizeof(UQ7_1) incorrect");
 
