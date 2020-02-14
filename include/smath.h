@@ -249,7 +249,7 @@ struct Sum<NIL> {
  */
 template<typename L>
 struct Product {
-	enum { result = L::head::value * Sum<typename L::tail>::result };
+	enum { result = L::head::value * Product<typename L::tail>::result };
 };
 template<>
 struct Product<NIL> {
