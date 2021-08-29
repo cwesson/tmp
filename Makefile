@@ -1,6 +1,6 @@
 
 INCLUDE := include/
-SRCS := unittest.cpp biginttest.cpp complextest.cpp rationaltest.cpp tmathtest.cpp modinttest.cpp
+SRCS := bigint.cpp unittest.cpp biginttest.cpp complextest.cpp rationaltest.cpp tmathtest.cpp modinttest.cpp
 
 CPP := g++
 CPPFLAGS := -std=c++17 -g $(addprefix -I,$(INCLUDE))

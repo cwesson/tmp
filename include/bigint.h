@@ -4,7 +4,8 @@
 
 #include <iostream>
 #include <limits>
-#include <stdint.h>
+#include <cstdint>
+#include <cinttypes>
 #include <string>
 #include "cppcompat.h"
 
@@ -23,14 +24,14 @@ class bigint {
 			DOUBLESIZE = SIZE*2
 		};
 	
-		bigint<T>():
-			hi(0), lo(0) {}
-		bigint<T>(T n):
-			hi(0), lo(n) {}
-		bigint<T>(T h, T l):
-			hi(h), lo(l) {}
-		bigint<T>(const bigint<T>& o):
-			hi(o.hi), lo(o.lo) {}
+		bigint():
+			lo(0), hi(0) {}
+		bigint(T n):
+			lo(n), hi(0) {}
+		bigint(T h, T l):
+			lo(l), hi(h) {}
+		bigint(const bigint<T>& o):
+			lo(o.lo), hi(o.hi) {}
 		
 		/**
 		 * Assignment.
@@ -313,11 +314,7 @@ class bigint {
 		/**
 		 * Hexidecimal notation.
 		 */
-		std::string hex() const{
-			char buff[HALFSIZE/2 + 1] = {0};
-			snprintf(&buff[0], sizeof(buff), "%s%s", hi.hex().c_str(), lo.hex().c_str());
-			return std::string(&buff[0]);
-		}
+		std::string hex() const;
 		
 		/**
 		 * Stream Output.
@@ -350,42 +347,7 @@ class bigint {
 		 * @param b Seconf number.
 		 * @return Result including carry.
 		 */
-		static bigintT mult(const halfintT& a, const halfintT& b){
-			typedef typename halfintT::halfintT qintT;
-			/*
-			                  ah al
-			                x bh bl
-			-------------------------
-			          ahbl+alblc albl
-			ahbh+albhc  albh
-			-------------------------
-			*/
-			const qintT ah = a.high();
-			const qintT al = a.low();
-			const qintT bh = b.high();
-			const qintT bl = b.low();
-	
-			const halfintT albl = halfintT::mult(al, bl);
-			const qintT alblc = albl.high();
-			const qintT alblp = albl.low();
-			const halfintT ahbl = halfintT::mult(ah, bl) + alblc;
-			const qintT ahblc = ahbl.high();
-			const qintT ahblp = ahbl.low();
-			const halfintT albh = halfintT::mult(al, bh);
-			const qintT albhc = albh.high();
-			const qintT albhp = albh.low();
-			const halfintT ahbh = halfintT::mult(ah, bh) + albhc;
-			const halfintT i = ((halfintT)ahblp + (halfintT)albhp);
-			const qintT ih = i.high();
-			const qintT il = i.low();
-	
-			const bigintT ret(
-				ahbh + ahblc + ih,
-				((halfintT)il << HALFSIZE) | alblp
-			);
-	
-			return ret;
-		}
+		static bigintT mult(const halfintT& a, const halfintT& b);
 		
 		typedef struct {
 			bigintT quo;
@@ -399,7 +361,7 @@ class bigint {
 		 * @return Result.
 		 */
 		static div_result div(const bigintT& a, const bigintT& b){
-			div_result res = {0};
+			div_result res = {0, 0};
 	
 			for(long long i = (sizeof(bigintT)*8)-1; i >= 0; --i){
 				res.rem <<= 1;
@@ -418,52 +380,56 @@ class bigint {
 		halfintT hi;
 };
 
-template<>
-std::string bigint<uint64_t>::hex() const{
+template<typename T>
+std::string bigint<T>::hex() const{
 	char buff[HALFSIZE/2 + 1] = {0};
-	snprintf(&buff[0], sizeof(buff), "%016llX%016llX", hi, lo);
+	snprintf(&buff[0], sizeof(buff), "%s%s", hi.hex().c_str(), lo.hex().c_str());
 	return std::string(&buff[0]);
 }
 
 template<>
-bigint<uint64_t> bigint<uint64_t>::mult(const uint64_t& a, const uint64_t& b){
+std::string bigint<uint64_t>::hex() const;
+
+template<typename T>
+bigint<T> bigint<T>::mult(const halfintT& a, const halfintT& b){
+	typedef typename halfintT::halfintT qintT;
 	/*
-	                  ah al
-	                x bh bl
+						ah al
+					x bh bl
 	-------------------------
-	          ahbl+alblc albl
+				ahbl+alblc albl
 	ahbh+albhc  albh
 	-------------------------
 	*/
-	const unsigned int shift = 32;
-	const uint64_t mask = 0x00000000FFFFFFFFull;
-	
-	const uint32_t ah = (a >> shift);
-	const uint32_t al = (a & mask);
-	const uint32_t bh = (b >> shift);
-	const uint32_t bl = (b & mask);
+	const qintT ah = a.high();
+	const qintT al = a.low();
+	const qintT bh = b.high();
+	const qintT bl = b.low();
 
-	const uint64_t albl = (uint64_t)al * (uint64_t)bl;
-	const uint32_t alblc = (albl >> shift);
-	const uint32_t alblp = (albl & mask);
-	const uint64_t ahbl = ((uint64_t)ah * (uint64_t)bl) + alblc;
-	const uint32_t ahblc = (ahbl >> shift);
-	const uint32_t ahblp = (ahbl & mask);
-	const uint64_t albh = ((uint64_t)al * (uint64_t)bh);
-	const uint32_t albhc = (albh >> shift);
-	const uint32_t albhp = (albh & mask);
-	const uint64_t ahbh = ((uint64_t)ah * (uint64_t)bh) + albhc;
-	const uint64_t i = ((uint64_t)ahblp + (uint64_t)albhp);
-	const uint32_t ih = (i >> shift);
-	const uint32_t il = (i & mask);
+	const halfintT albl = halfintT::mult(al, bl);
+	const qintT alblc = albl.high();
+	const qintT alblp = albl.low();
+	const halfintT ahbl = halfintT::mult(ah, bl) + alblc;
+	const qintT ahblc = ahbl.high();
+	const qintT ahblp = ahbl.low();
+	const halfintT albh = halfintT::mult(al, bh);
+	const qintT albhc = albh.high();
+	const qintT albhp = albh.low();
+	const halfintT ahbh = halfintT::mult(ah, bh) + albhc;
+	const halfintT i = ((halfintT)ahblp + (halfintT)albhp);
+	const qintT ih = i.high();
+	const qintT il = i.low();
 
-	const bigint<uint64_t> ret(
+	const bigintT ret(
 		ahbh + ahblc + ih,
-		((uint64_t)il << 32) | alblp
+		((halfintT)il << HALFSIZE) | alblp
 	);
 
 	return ret;
 }
+
+template<>
+bigint<uint64_t> bigint<uint64_t>::mult(const uint64_t& a, const uint64_t& b);
 
 namespace std {
 	template<typename T>
