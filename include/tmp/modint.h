@@ -1,17 +1,27 @@
+/**
+ * @file include/tmp/modint.h
+ * @author Conlan Wesson
+ * @copyright (c) 2021, Conlan Wesson
+ */
 
-#include "minint.h"
+#ifndef TMP_MODINT_H_
+#define TMP_MODINT_H_
+
+#include "tmp/minint.h"
+
+namespace tmp {
 
 template<unsigned long long MOD>
 class modint {
 	public:
 		typedef modint<MOD> modintT;
-		typedef typename minint<MOD>::DataType storageT;
+		typedef typename minint<MOD>::type storageT;
 		
-		modint<MOD>():
+		modint():
 			value(0) {}
-		modint<MOD>(unsigned long long v):
+		modint(unsigned long long v):
 			value(v % MOD) {}
-		modint<MOD>(const modint<MOD>& o):
+		modint(const modint& o):
 			value(o.value) {}
 		
 		/**
@@ -192,3 +202,6 @@ class modint {
 		storageT value;
 };
 
+} // namespace tmp
+
+#endif // TMP_MODINT_H_

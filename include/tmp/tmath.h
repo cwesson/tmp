@@ -1,6 +1,13 @@
+/**
+ * @file include/tmp/tmath.h
+ * @author Conlan Wesson
+ * @copyright (c) 2021, Conlan Wesson
+ */
 
-#ifndef ___TMATH_H_
-#define ___TMATH_H_
+#ifndef TMP_TMATH_H_
+#define TMP_TMATH_H_
+
+namespace tmp {
 
 #if __cplusplus >= 201402L
 
@@ -83,7 +90,8 @@ T product(T x, Args... args){
 	return x * product(args...);
 }
 
-#endif
+#endif // __cplusplus >= 201103L
 
-#endif
+} // namespace tmp
 
+#endif // TMP_TMATH_H_

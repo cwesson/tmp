@@ -1,7 +1,7 @@
 
 #include <assert.h>
 #include <iostream>
-#include "rational.h"
+#include "tmp/rational.h"
 
 int rationaltest(){
 	rational<int> C;

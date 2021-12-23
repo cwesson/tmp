@@ -1,6 +1,11 @@
+/**
+ * @file include/tmp/matrix.h
+ * @author Conlan Wesson
+ * @copyright (c) 2021, Conlan Wesson
+ */
 
-#ifndef ___MATRIX_H_
-#define ___MATRIX_H_
+#ifndef TMP_MATRIX_H_
+#define TMP_MATRIX_H_
 
 #if __cplusplus >= 201103L
 #include <initializer_list>
@@ -251,5 +256,4 @@ matrix<1, 2, T> operator,(T a, T b){
 	return ret;
 }
 
-#endif
-
+#endif // TMP_MATRIX_H_

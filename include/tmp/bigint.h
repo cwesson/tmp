@@ -1,13 +1,18 @@
+/**
+ * @file include/tmp/bigint.h
+ * @author Conlan Wesson
+ * @copyright (c) 2021, Conlan Wesson
+ */
 
-#ifndef ___BIGINT_H__
-#define ___BIGINT_H__
+#ifndef TMP_BIGINT_H__
+#define TMP_BIGINT_H__
 
 #include <iostream>
 #include <limits>
 #include <cstdint>
 #include <cinttypes>
 #include <string>
-#include "cppcompat.h"
+#include "tmp/cppcompat.h"
 
 template<typename T>
 class bigint {
@@ -490,5 +495,4 @@ static_assert(sizeof(uint8192) == 8192/8, "sizeof(uint8192) incorrect");
 static_assert(sizeof(uint16384) == 16384/8, "sizeof(uint16384) incorrect");
 static_assert(sizeof(uint32768) == 32768/8, "sizeof(uint32768) incorrect");
 
-#endif
-
+#endif // TMP_BIGINT_H_

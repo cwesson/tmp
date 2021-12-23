@@ -1,5 +1,5 @@
 /**
- * @file lfsr.h
+ * @file include/tmp/lfsr.h
  * Linear Feedback Shift Register (LFSR) template.
  * @author Conlan Wesson
  */
@@ -7,9 +7,9 @@
 #pragma once
 
 #include <iostream>
-#include "minint.h"
+#include "tmp/minint.h"
 
-namespace lfsr {
+namespace tmp::lfsr {
 
 /**
  * Bitmask consisting of N ones.
@@ -45,7 +45,7 @@ struct _lfsr_feed {};
 template<unsigned int SIZE, unsigned int... TAPS>
 class LFSR {
 	public:
-		typedef typename minint_bits<SIZE>::DataType state_t;
+		typedef typename minint_bits<SIZE>::type state_t;
 		static_assert(sizeof(state_t)*8 >= SIZE);
 
 		/**
@@ -162,4 +162,4 @@ struct _lfsr_feed<SIZE, T> {
 	}
 };
 
-}
+} // namespace tmp::lfsr

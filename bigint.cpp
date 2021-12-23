@@ -1,10 +1,10 @@
 
-#include "bigint.h"
+#include "tmp/bigint.h"
 
 template<>
 std::string bigint<uint64_t>::hex() const{
 	char buff[HALFSIZE + 1] = {0};
-	snprintf(&buff[0], sizeof(buff), "%016" PRIu64 "X%016" PRIu64 "X", hi, lo);
+	snprintf(&buff[0], sizeof(buff), "%016" PRIX64 "%016" PRIX64, hi, lo);
 	return std::string(&buff[0]);
 }
 

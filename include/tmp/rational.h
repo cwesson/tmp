@@ -1,6 +1,6 @@
 
-#ifndef ___RATIONAL_H_
-#define ___RATIONAL_H_
+#ifndef TMP_RATIONAL_H_
+#define TMP_RATIONAL_H_
 
 #include <iostream>
 #include <limits>
@@ -12,13 +12,13 @@ template<typename T> class rational {
 	typedef rational<T> rationalT;
 	
 	public:
-		rational<T>():
+		rational():
 			nu(0), de(1) {}
-		rational<T>(T n):
+		rational(T n):
 			nu(n), de(1) {}
-		rational<T>(T n, T d):
+		rational(T n, T d):
 			nu(n), de(d) { reduce(); }
-		rational<T>(const rational<T>& o):
+		rational(const rational& o):
 			nu(o.nu), de(o.de) { reduce(); }
 		
 		/**
@@ -165,5 +165,4 @@ template<typename T> class rational {
 		}
 };
 
-#endif
-
+#endif // TMP_RATIONAL_H_

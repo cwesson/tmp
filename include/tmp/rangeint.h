@@ -9,5 +9,4 @@ class rangeint {
 	
 	private:
 		signed long long int value;
-}
-
+};

@@ -1,11 +1,11 @@
 
 #include <assert.h>
 #include <iostream>
-#include "modint.h"
+#include "tmp/modint.h"
 
 int modinttest(){
-	modint<5> C;
-	modint<5> z(0);
+	tmp::modint<5> C;
+	tmp::modint<5> z(0);
 	std::cout << C;
 	assert(C == z);
 	std::cout << "  PASS" << std::endl;

@@ -5,10 +5,12 @@ extern int rationaltest();
 extern int tmathtest();
 extern int modinttest();
 
+#include "CppUTest/CommandLineTestRunner.h"
 #include <iostream>
-#include "smath.h"
+#include "tmp/smath.h"
+#include "tmp/list.h"
 
-int main(){
+int main(int argc, char* argv[]){
 	biginttest();
 	
 	complextest();
@@ -18,18 +20,26 @@ int main(){
 	tmathtest();
 	
 	modinttest();
+
+	CommandLineTestRunner::RunAllTests(argc, argv);
 	
-	/*typedef List< Int<1>, List< Int<2>, List< Int<4>, List< Int<8>>>>> list;
+	typedef tmp::List< tmp::Int<1>, tmp::List< tmp::Int<2>, tmp::List< tmp::Int<4>, tmp::List< tmp::Int<8>>>>> list;
 	
-	std::cout << Length<list>::result << std::endl;
-	std::cout << Sum<list>::result << std::endl;
-	std::cout << Nth<list, 3>::result << std::endl;
-	std::cout << Includes<list, Int<2>>::result << std::endl;
-	std::cout << Includes<list, Int<32>>::result << std::endl;
-	std::cout << Find<list, Int<1>>::result << std::endl;
-	std::cout << Find<list, Int<4>>::result << std::endl;
-	std::cout << Find<list, Int<8>>::result << std::endl;*/
-	//std::cout << Find<list, Int<32>>::result << std::endl;
+	static_assert(tmp::Length<list>::result == 4);
+	static_assert(tmp::Sum<list>::result == 15);
+	static_assert(tmp::Product<list>::result == 64);
+	static_assert(tmp::Nth<list, 3>::result == 8);
+	static_assert(tmp::Includes<list, tmp::Int<2>>::result == true);
+	static_assert(tmp::Includes<list, tmp::Int<32>>::result == false);
+	static_assert(tmp::Find<list, tmp::Int<1>>::result == 0);
+	static_assert(tmp::Find<list, tmp::Int<4>>::result == 2);
+	static_assert(tmp::Find<list, tmp::Int<8>>::result == 3);
+	//std::cout << tmp::Find<list, tmp::Int<32>>::result << std::endl;
+	
+	std::cout << "log(2)=" << tmp::smath<64>::log << std::endl;
+	std::cout << "log2(20)=" << tmp::smath<20, 2>::log << std::endl;
+	std::cout << "log2(3)=" << tmp::smath<3, 2>::log << std::endl;
+	std::cout << "log3(20)=" << tmp::smath<20, 3>::log << std::endl;
 	
 	return 0;
 }

@@ -1,6 +1,11 @@
+/**
+ * @file include/tmp/complex.h
+ * @author Conlan Wesson
+ * @copyright (c) 2021, Conlan Wesson
+ */
 
-#ifndef ___COMPLEX_H_
-#define ___COMPLEX_H_
+#ifndef TMP_COMPLEX_H_
+#define TMP_COMPLEX_H_
 
 #include <iostream>
 
@@ -8,13 +13,13 @@ template<typename T> class complex {
 	typedef complex<T> complexT;
 	
 	public:
-		complex<T>():
+		complex():
 			re(0), im(0) {}
-		complex<T>(T r):
+		complex(T r):
 			re(r), im(0) {}
-		complex<T>(T r, T i):
+		complex(T r, T i):
 			re(r), im(i) {}
-		complex<T>(const complex<T>& o):
+		complex(const complex& o):
 			re(o.re), im(o.im) {}
 		
 		/**
@@ -158,5 +163,4 @@ complex<unsigned long long> operator""_i(unsigned long long i){
 }
 #endif
 
-#endif
-
+#endif // TMP_COMPLEX_H_

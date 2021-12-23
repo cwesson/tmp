@@ -1,8 +1,8 @@
 
 #include <assert.h>
 #include <cstdio>
-#include "bigint.h"
-#include "rotate.h"
+#include "tmp/bigint.h"
+#include "tmp/rotate.h"
 
 int biginttest(){
 	printf("sizeof(uint128)  ==  %d", sizeof(uint128));
@@ -26,12 +26,12 @@ int biginttest(){
 	
 	uint32_t a = 0x87654321;
 	
-	uint32_t b = rol<uint32_t>(a, 8);
+	uint32_t b = tmp::rol<uint32_t>(a, 8);
 	printf("0x%X", b);
 	assert(b == 0x65432187);
 	printf("  PASS\n");
 	
-	uint32_t c = ror<uint32_t>(a, 8);
+	uint32_t c = tmp::ror<uint32_t>(a, 8);
 	printf("0x%X", c);
 	assert(c == 0x21876543);
 	printf("  PASS\n");
@@ -55,12 +55,12 @@ int biginttest(){
 	assert(bd.hex() == "00001234567890ABCDEFAABBCCDDEEFF");
 	printf("  PASS\n");
 	
-	uint128 bl = rol(big1, 32);
+	uint128 bl = tmp::rol(big1, 32);
 	printf("0x%s", bl.hex().c_str());
 	assert(bl.hex() == "90ABCDEFAABBCCDDEEFF335512345678");
 	printf("  PASS\n");
 	
-	uint128 br = ror(big1, 32);
+	uint128 br = tmp::ror(big1, 32);
 	printf("0x%s", br.hex().c_str());
 	assert(br.hex() == "EEFF33551234567890ABCDEFAABBCCDD");
 	printf("  PASS\n");
