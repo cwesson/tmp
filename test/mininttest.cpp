@@ -1,4 +1,3 @@
-#include "CppUTest/CommandLineTestRunner.h"
 #include "CppUTest/TestHarness.h"
 #include "tmp/minint.h"
 #include <iostream>

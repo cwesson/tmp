@@ -46,7 +46,7 @@ template<unsigned int SIZE, unsigned int... TAPS>
 class LFSR {
 	public:
 		typedef typename minint_bits<SIZE>::type state_t;
-		static_assert(sizeof(state_t)*8 >= SIZE);
+		static_assert(sizeof(state_t)*8 >= SIZE, "sizeof lfsr state too small");
 
 		/**
 		 * LFSR constructor.

@@ -1,4 +1,3 @@
-#include "CppUTest/CommandLineTestRunner.h"
 #include "CppUTest/TestHarness.h"
 #include "tmp/fixed.h"
 #include <iostream>
@@ -15,7 +14,7 @@ TEST_GROUP(FixedTestGroup)
 TEST(FixedTestGroup, ArithmeticTest)
 {
 	tmp::fixed<4,12,signed> a(pi);
-	static_assert(sizeof(a) == 4);
+	static_assert(sizeof(a) == 4, "sizeof Q4.12 incorrect");
 	double d = a;
 	std::cout.precision(10);
 	DOUBLES_EQUAL(pi, d, m12);

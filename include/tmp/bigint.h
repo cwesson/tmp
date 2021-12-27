@@ -453,7 +453,7 @@ namespace std {
 			static constexpr bool is_iec559 = false;
 			static constexpr bool is_bounded = numeric_limits<T>::is_bounded;
 			static constexpr bool is_modulo = numeric_limits<T>::is_modulo;
-			static constexpr int digits = 8*sizeof(T)*2;
+			static constexpr int digits = 8*sizeof(bigint<T>);
 			static constexpr int digits10 = numeric_limits<bigint<T> >::digits * 0.30103;
 			static constexpr int max_digits10 = 0;
 			static constexpr int radix = numeric_limits<T>::radix;

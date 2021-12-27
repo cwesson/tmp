@@ -8,7 +8,6 @@
 #define TMP_LIST_H_
 
 #include "tmp/types.h"
-#include "tmp/assert.h"
 
 namespace tmp {
 
@@ -99,8 +98,8 @@ struct _Find<NIL, F> {
  */
 template<typename L, typename F>
 struct Find {
-	typedef typename Assert<Includes<L, F>::result>::check fail;
-	//static_assert(Includes<L, F>::result, "L does not include F");
+	//typedef typename Assert<Includes<L, F>::result>::check fail;
+	static_assert((Includes<L, F>::result), "L does not include F");
 	enum { result = _Find<L, F>::result };
 };
 

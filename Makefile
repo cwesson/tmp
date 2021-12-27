@@ -1,6 +1,6 @@
 
 INCLUDE := include/ test/cpputest/include/
-SRCS := bigint.cpp unittest.cpp biginttest.cpp complextest.cpp rationaltest.cpp tmathtest.cpp modinttest.cpp test/fixedtest.cpp test/mininttest.cpp test/comparetest.cpp test/lfsrtest.cpp
+SRCS := src/bigint.cpp unittest.cpp test/biginttest.cpp test/complextest.cpp test/rationaltest.cpp test/tmathtest.cpp test/modinttest.cpp test/fixedtest.cpp test/mininttest.cpp test/comparetest.cpp test/lfsrtest.cpp test/listtest.cpp test/smathtest.cpp
 CPPUTESTLIB := test/cpputest/src/CppUTest/libCppUTest.a
 
 CPP := g++
@@ -10,6 +10,8 @@ LDARGS :=
 OBJS := $(addsuffix .o,$(addprefix bin/,$(basename $(SRCS))))
 DEPS := $(OBJS:%.o=%.d)
 
+.PHONY: all clean realclean ut cpputest
+
 all: ut
 
 ut: unittest
@@ -18,14 +20,14 @@ unittest: $(OBJS) $(CPPUTESTLIB)
 	$(LD) $(LDARGS) -o $@ $^
 	./unittest
 
-$(CPPUTESTLIB): cpputest
+cpputest: $(CPPUTESTLIB)
 
-cpputest:
+$(CPPUTESTLIB):
 	cd test/cpputest; cmake .
 	make -C test/cpputest
 
 bin/%.o: %.cpp
-	@mkdir -p bin/test/
+	@mkdir -p $(dir $@)
 	$(CPP) $(CPPFLAGS) -MMD -c -o $@ -c $<
 
 -include $(DEPS)

@@ -1,40 +1,43 @@
-
-#include <assert.h>
-#include <iostream>
+#include "CppUTest/TestHarness.h"
 #include "tmp/modint.h"
+#include <iostream>
 
-int modinttest(){
+TEST_GROUP(ModintTestGroup)
+{
+
+};
+
+TEST(ModintTestGroup, ModintTest)
+{
 	tmp::modint<5> C;
-	tmp::modint<5> z(0);
+	const tmp::modint<5> z(0);
 	std::cout << C;
-	assert(C == z);
+	CHECK(C == z);
 	std::cout << "  PASS" << std::endl;
 	
 	C++;
 	std::cout << C;
-	assert(C == 1);
+	CHECK(C == 1);
 	std::cout << "  PASS" << std::endl;
 	
 	C += 1;
 	std::cout << C;
-	assert(C == 2);
+	CHECK(C == 2);
 	std::cout << "  PASS" << std::endl;
 	
 	C = C + 1;
 	std::cout << C;
-	assert(C == 3);
+	CHECK(C == 3);
 	std::cout << "  PASS" << std::endl;
 	
 	C++;
 	std::cout << C;
-	assert(C == 4);
+	CHECK(C == 4);
 	std::cout << "  PASS" << std::endl;
 	
 	C++;
 	std::cout << C;
-	assert(C == z);
+	CHECK(C == z);
 	std::cout << "  PASS" << std::endl;
-	
-	return 0;
 }
 
