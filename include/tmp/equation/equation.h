@@ -28,6 +28,12 @@ template<typename T>
 class operation_add;
 
 template<typename T>
+class operation_neg;
+
+template<typename T>
+class operation_sub;
+
+template<typename T>
 class operation_mult;
 
 /**
@@ -59,6 +65,18 @@ class equation {
             return (*eq)();
         };
 
+        equation<T> operator+(const base_equation<T>& rhs) const {
+            return *eq + rhs;
+        }
+
+        equation<T> operator-(const base_equation<T>& rhs) const {
+            return *eq - rhs;
+        }
+
+        equation<T> operator*(const base_equation<T>& rhs) const {
+            return *eq * rhs;
+        }
+
         /**
          * Simplify the equation.
          * @return Simplified equation.
@@ -80,6 +98,8 @@ class equation {
         friend std::ostream& operator<<(std::ostream& os, const equation<U>& rhs);
 
         friend class operation_add<T>;
+        friend class operation_neg<T>;
+        friend class operation_sub<T>;
         friend class operation_mult<T>;
     
     private:
@@ -115,14 +135,6 @@ class base_equation {
             return false;
         }
 
-        virtual equation<T> operator+(const base_equation<T>& rhs) const {
-            return add(this, &rhs);
-        }
-
-        virtual equation<T> operator*(const base_equation<T>& rhs) const {
-            return mult(this, &rhs);
-        }
-
         template<typename U>
         friend std::ostream& operator<<(std::ostream& os, const base_equation<U>& rhs);
 
@@ -145,11 +157,11 @@ std::ostream& operator<<(std::ostream& os, const base_equation<T>& rhs) {
 }
 
 template <typename T>
-equation<T> add(const base_equation<T>* l, const base_equation<T>* r){
-    if(l->is_constant() && r->is_constant()){
-        return equation(new constant((*l)() + (*r)()));
+equation<T> operator+(const base_equation<T>& l, const base_equation<T>& r){
+    if(l.is_constant() && r.is_constant()){
+        return equation(new constant(l() + r()));
     }else{
-        return equation(new operation_add(l, r));
+        return equation(new operation_add(&l, &r));
     }
 }
 
@@ -180,12 +192,12 @@ class operation_add : public base_equation<T> {
             }else if(r.eq->is_constant() && r() == 0){
                 return l;
             }else{
-                return add(l.eq, r.eq);
+                return *l.eq + *r.eq;
             }
         }
 
         virtual equation<T> derivative(const symbol<T>& d) const override {
-            return add(lhs.derivative(d).eq, rhs.derivative(d).eq).simplify();
+            return (*lhs.derivative(d).eq + *rhs.derivative(d).eq).simplify();
         }
 
     protected:
@@ -194,11 +206,105 @@ class operation_add : public base_equation<T> {
 };
 
 template <typename T>
-equation<T> mult(const base_equation<T>* l, const base_equation<T>* r){
-    if(l->is_constant() && r->is_constant()){
-        return equation(new constant((*l)() * (*r)()));
+equation<T> operator-(const base_equation<T>& l, const base_equation<T>& r){
+    if(l.is_constant() && r.is_constant()){
+        return equation(new constant(l() - r()));
     }else{
-        return equation(new operation_mult(l, r));
+        return equation(new operation_sub(&l, &r));
+    }
+}
+
+template <typename T>
+equation<T> operator-(const base_equation<T>& r){
+    if(r.is_constant()){
+        return equation(new constant(-r()));
+    }else{
+        return equation(new operation_neg(&r));
+    }
+}
+
+/**
+ * Negative equation.
+ * @tparam T Type of data used in equation.
+ */
+template<typename T>
+class operation_neg : public base_equation<T> {
+    public:
+        operation_neg(const base_equation<T>* r) :
+            base_equation<T>(),
+            rhs(r) {}
+
+        virtual T operator()() const override {
+            return -rhs();
+        }
+
+        virtual void print(std::ostream& os) const override {
+            os << "-" << rhs;
+        }
+
+        virtual equation<T> simplify() const override {
+            auto r = rhs.simplify();
+            if(r.eq->is_constant() && r() == 0){
+                return equation(new constant<T>(0));
+            }else{
+                return equation(this);
+            }
+        }
+
+        virtual equation<T> derivative(const symbol<T>& d) const override {
+            return (-(*rhs.derivative(d).eq)).simplify();
+        }
+
+    protected:
+        const equation<T> rhs;
+};
+
+/**
+ * Subtraction equation.
+ * @tparam T Type of data used in equation.
+ */
+template<typename T>
+class operation_sub : public base_equation<T> {
+    public:
+        operation_sub(const base_equation<T>* l, const base_equation<T>* r) :
+            base_equation<T>(),
+            lhs(l), rhs(r) {}
+
+        virtual T operator()() const override {
+            return lhs() - rhs();
+        }
+
+        virtual void print(std::ostream& os) const override {
+            os << lhs << "-" << rhs;
+        }
+
+        virtual equation<T> simplify() const override {
+            auto l = lhs.simplify();
+            auto r = rhs.simplify();
+            if(l.eq->is_constant() && l() == 0){
+                return -(*r.eq);
+            }else if(r.eq->is_constant() && r() == 0){
+                return l;
+            }else{
+                return *l.eq + *r.eq;
+            }
+        }
+
+        virtual equation<T> derivative(const symbol<T>& d) const override {
+            return (*lhs.derivative(d).eq - *rhs.derivative(d).eq).simplify();
+        }
+
+    protected:
+        const equation<T> lhs;
+        const equation<T> rhs;
+};
+
+template <typename T>
+equation<T> operator*(const base_equation<T>& l, const base_equation<T>& r){
+    if(l.is_constant() && r.is_constant()){
+        return equation(new constant(l() * r()));
+    }else{
+        return equation(new operation_mult(&l, &r));
     }
 }
 
@@ -237,11 +343,11 @@ class operation_mult : public base_equation<T> {
                     return l;
                 }
             }
-            return mult(l.eq, r.eq);
+            return *l.eq * *r.eq;
         }
 
         virtual equation<T> derivative(const symbol<T>& d) const override {
-            return add(mult(lhs.derivative(d).eq, rhs.eq).eq, mult(rhs.derivative(d).eq, lhs.eq).eq).simplify();
+            return (*(*lhs.derivative(d).eq * *rhs.eq).eq + *(*rhs.derivative(d).eq * *lhs.eq).eq).simplify();
         }
 
     protected:
@@ -306,7 +412,7 @@ class symbol : public base_equation<T> {
 template<typename T>
 class constant : public base_equation<T> {
     public:
-        constant(const T& v) :
+        explicit constant(const T& v) :
             base_equation<T>(),
             value(v)
         {}

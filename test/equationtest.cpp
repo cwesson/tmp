@@ -17,9 +17,20 @@ int main() {
     std::cout << g << "=" << g() << std::endl;
 
     auto deriv = f.derivative(x);
-    std::cout << "d x+y /dx = " << deriv << " (should be 1)" << std::endl;
+    std::cout << "d " << f << " /dx = " << deriv << " (should be 1)" << std::endl;
     auto dg = g.derivative(x);
-    std::cout << "d x*y /dx = " << dg << " (should be y)" << std::endl;
+    std::cout << "d " << g << " /dx = " << dg << " (should be y)" << std::endl;
+
+    auto h = constant<double>(2) * x * y;
+    std::cout << h << "=" << h() << std::endl;
+    auto dh = h.derivative(x);
+    std::cout << "d " << h << " /dx = " << dh << " (should be 2y)" << std::endl;
+
+    auto i = x - y;
+    std::cout << i << "=" << i() << std::endl;
+    auto di = i.derivative(y);
+    std::cout << "d " << i << " /dx = " << di << " (should be -1)" << std::endl;
+
 
     return 0;
 }
