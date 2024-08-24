@@ -11,6 +11,7 @@
 #include <string>
 #include <iostream>
 #include <optional>
+#include <cmath>
 
 namespace tmp {
 namespace equation {
@@ -35,6 +36,22 @@ class operation_sub;
 
 template<typename T>
 class operation_mult;
+
+template<typename T>
+class operation_div;
+
+template<typename T>
+class operation_log;
+
+template<typename T>
+class operation_pow;
+
+enum precedence {
+    PRECEDENCE_PARENTHESIS,
+    PRECEDENCE_EXPONENT,
+    PRECEDENCE_MULTIPLICATION,
+    PRECEDENCE_ADDITION,
+};
 
 /**
  * Represents a mathematical equation.
@@ -73,8 +90,56 @@ class equation {
             return *eq - rhs;
         }
 
+        equation<T> operator+(const equation<T>& rhs) const {
+            return *eq + *rhs.eq;
+        }
+
+        equation<T> operator-(const equation<T>& rhs) const {
+            return *eq - *rhs.eq;
+        }
+
+        equation<T> operator-() const {
+            return -(*eq);
+        }
+
         equation<T> operator*(const base_equation<T>& rhs) const {
             return *eq * rhs;
+        }
+
+        equation<T> operator/(const base_equation<T>& rhs) const {
+            return *eq / rhs;
+        }
+
+        equation<T> operator*(const equation<T>& rhs) const {
+            return *eq * *rhs.eq;
+        }
+
+        equation<T> operator/(const equation<T>& rhs) const {
+            return *eq / *rhs.eq;
+        }
+
+        equation<T> pow(T rhs) const {
+            return equation(new operation_pow(eq, new constant(rhs)));
+        }
+
+        equation<T> pow(const base_equation<T>& rhs) const {
+            return equation(new operation_pow(eq, &rhs));
+        }
+
+        equation<T> pow(const equation<T>& rhs) const {
+            return equation(new operation_pow(eq, rhs.eq));
+        }
+
+        bool is_constant() const {
+            return eq->is_constant();
+        }
+
+        bool is_symbol() const {
+            return eq->is_symbol();
+        }
+
+        int precedence() const {
+            return eq->precedence();
         }
 
         /**
@@ -97,10 +162,14 @@ class equation {
         template<typename U>
         friend std::ostream& operator<<(std::ostream& os, const equation<U>& rhs);
 
+        friend class base_equation<T>;
         friend class operation_add<T>;
         friend class operation_neg<T>;
         friend class operation_sub<T>;
         friend class operation_mult<T>;
+        friend class operation_div<T>;
+        friend class operation_log<T>;
+        friend class operation_pow<T>;
     
     private:
         const base_equation<T>* eq;
@@ -135,10 +204,24 @@ class base_equation {
             return false;
         }
 
+        equation<T> pow(T rhs) const {
+            return equation(new operation_pow(this, new constant(rhs)));
+        }
+
+        equation<T> pow(const base_equation<T>& rhs) const {
+            return equation(new operation_pow(this, &rhs));
+        }
+
+        equation<T> pow(const equation<T>& rhs) const {
+            return equation(new operation_pow(this, rhs.eq));
+        }
+
         template<typename U>
         friend std::ostream& operator<<(std::ostream& os, const base_equation<U>& rhs);
 
         virtual void print(std::ostream& os) const = 0;
+
+        virtual int precedence() const = 0;
 
         virtual equation<T> simplify() const = 0;
 
@@ -181,7 +264,21 @@ class operation_add : public base_equation<T> {
         }
 
         virtual void print(std::ostream& os) const override {
-            os << lhs << "+" << rhs;
+            if(lhs.precedence() > precedence()){
+                os << "(" << lhs << ")";
+            }else{
+                os << lhs;
+            }
+            os << "+";
+            if(rhs.precedence() > precedence()){
+                os << "(" << rhs << ")";
+            }else{
+                os << rhs;
+            }
+        }
+
+        virtual int precedence() const override {
+            return PRECEDENCE_ADDITION;
         }
 
         virtual equation<T> simplify() const override {
@@ -197,7 +294,7 @@ class operation_add : public base_equation<T> {
         }
 
         virtual equation<T> derivative(const symbol<T>& d) const override {
-            return (*lhs.derivative(d).eq + *rhs.derivative(d).eq).simplify();
+            return (lhs.derivative(d) + rhs.derivative(d)).simplify();
         }
 
     protected:
@@ -239,7 +336,16 @@ class operation_neg : public base_equation<T> {
         }
 
         virtual void print(std::ostream& os) const override {
-            os << "-" << rhs;
+            os << "-";
+            if(rhs.precedence() > precedence()){
+                os << "(" << rhs << ")";
+            }else{
+                os << rhs;
+            }
+        }
+
+        virtual int precedence() const override {
+            return PRECEDENCE_ADDITION;
         }
 
         virtual equation<T> simplify() const override {
@@ -252,7 +358,7 @@ class operation_neg : public base_equation<T> {
         }
 
         virtual equation<T> derivative(const symbol<T>& d) const override {
-            return (-(*rhs.derivative(d).eq)).simplify();
+            return (-rhs.derivative(d)).simplify();
         }
 
     protected:
@@ -275,7 +381,21 @@ class operation_sub : public base_equation<T> {
         }
 
         virtual void print(std::ostream& os) const override {
-            os << lhs << "-" << rhs;
+            if(lhs.precedence() > precedence()){
+                os << "(" << lhs << ")";
+            }else{
+                os << lhs;
+            }
+            os << "-";
+            if(rhs.precedence() > precedence()){
+                os << "(" << rhs << ")";
+            }else{
+                os << rhs;
+            }
+        }
+
+        virtual int precedence() const override {
+            return PRECEDENCE_ADDITION;
         }
 
         virtual equation<T> simplify() const override {
@@ -286,12 +406,12 @@ class operation_sub : public base_equation<T> {
             }else if(r.eq->is_constant() && r() == 0){
                 return l;
             }else{
-                return *l.eq + *r.eq;
+                return *l.eq - *r.eq;
             }
         }
 
         virtual equation<T> derivative(const symbol<T>& d) const override {
-            return (*lhs.derivative(d).eq - *rhs.derivative(d).eq).simplify();
+            return (lhs.derivative(d) - rhs.derivative(d)).simplify();
         }
 
     protected:
@@ -305,6 +425,15 @@ equation<T> operator*(const base_equation<T>& l, const base_equation<T>& r){
         return equation(new constant(l() * r()));
     }else{
         return equation(new operation_mult(&l, &r));
+    }
+}
+
+template <typename T>
+equation<T> operator*(T l, const base_equation<T>& r){
+    if(r.is_constant()){
+        return equation(new constant(l * r()));
+    }else{
+        return equation(new operation_mult(new constant(l), &r));
     }
 }
 
@@ -324,7 +453,21 @@ class operation_mult : public base_equation<T> {
         }
 
         virtual void print(std::ostream& os) const override {
-            os << lhs << "*" << rhs;
+            if(lhs.precedence() > precedence()){
+                os << "(" << lhs << ")";
+            }else{
+                os << lhs;
+            }
+            os << "*";
+            if(rhs.precedence() > precedence()){
+                os << "(" << rhs << ")";
+            }else{
+                os << rhs;
+            }
+        }
+
+        virtual int precedence() const override {
+            return PRECEDENCE_MULTIPLICATION;
         }
 
         virtual equation<T> simplify() const override {
@@ -347,7 +490,186 @@ class operation_mult : public base_equation<T> {
         }
 
         virtual equation<T> derivative(const symbol<T>& d) const override {
-            return (*(*lhs.derivative(d).eq * *rhs.eq).eq + *(*rhs.derivative(d).eq * *lhs.eq).eq).simplify();
+            return ((lhs.derivative(d) * rhs) + (rhs.derivative(d) * lhs)).simplify();
+        }
+
+    protected:
+        const equation<T> lhs;
+        const equation<T> rhs;
+};
+
+
+template <typename T>
+equation<T> operator/(const base_equation<T>& l, const base_equation<T>& r){
+    if(l.is_constant() && r.is_constant()){
+        return equation(new constant(l() / r()));
+    }else{
+        return equation(new operation_div(&l, &r));
+    }
+}
+
+template <typename T>
+equation<T> operator/(T l, const base_equation<T>& r){
+    if(r.is_constant()){
+        return equation(new constant(l * r()));
+    }else{
+        return equation(new operation_div(new constant(l), &r));
+    }
+}
+
+/**
+ * Division equation.
+ * @tparam T Type of data used in equation.
+ */
+template<typename T>
+class operation_div : public base_equation<T> {
+    public:
+        operation_div(const base_equation<T>* l, const base_equation<T>* r) :
+            base_equation<T>(),
+            lhs(l), rhs(r) {}
+
+        virtual T operator()() const override {
+            return lhs() / rhs();
+        }
+
+        virtual void print(std::ostream& os) const override {
+            if(lhs.precedence() > precedence()){
+                os << "(" << lhs << ")";
+            }else{
+                os << lhs;
+            }
+            os << "/";
+            if(rhs.precedence() > precedence()){
+                os << "(" << rhs << ")";
+            }else{
+                os << rhs;
+            }
+        }
+
+        virtual int precedence() const override {
+            return PRECEDENCE_MULTIPLICATION;
+        }
+
+        virtual equation<T> simplify() const override {
+            auto l = lhs.simplify();
+            auto r = rhs.simplify();
+            if(l.eq->is_constant()){
+                if(l() == 0){
+                    return equation(new constant<T>(0));
+                }
+            }else if(r.eq->is_constant()){
+                if(r() == 1){
+                    return l;
+                }
+            }
+            return l / r;
+        }
+
+        virtual equation<T> derivative(const symbol<T>& d) const override {
+            return (((lhs.derivative(d) * rhs) - (rhs.derivative(d) * lhs)) / rhs.pow(equation(new constant<T>(2)))).simplify();
+        }
+
+    protected:
+        const equation<T> lhs;
+        const equation<T> rhs;
+};
+
+/**
+ * Logarithmic equation.
+ * @tparam T Type of data used in equation.
+ */
+template<typename T>
+class operation_log : public base_equation<T> {
+    public:
+        operation_log(const base_equation<T>* r) :
+            base_equation<T>(),
+            rhs(r) {}
+
+        virtual T operator()() const override {
+            return std::log(rhs());
+        }
+
+        virtual void print(std::ostream& os) const override {
+            os << "ln(" << rhs << ")";
+        }
+
+        virtual int precedence() const override {
+            return PRECEDENCE_PARENTHESIS;
+        }
+
+        virtual equation<T> simplify() const override {
+            auto r = rhs.simplify();
+            return equation<T>(new operation_log(r.eq));
+        }
+
+        virtual equation<T> derivative(const symbol<T>& d) const override {
+            return (rhs.derivative(d) / rhs).simplify();
+        }
+
+    protected:
+        const equation<T> rhs;
+};
+
+/**
+ * Exponentiation equation.
+ * @tparam T Type of data used in equation.
+ */
+template<typename T>
+class operation_pow : public base_equation<T> {
+    public:
+        operation_pow(const base_equation<T>* l, const base_equation<T>* r) :
+            base_equation<T>(),
+            lhs(l), rhs(r) {}
+
+        virtual T operator()() const override {
+            return std::pow(lhs(), rhs());
+        }
+
+        virtual void print(std::ostream& os) const override {
+            if(lhs.precedence() > precedence()){
+                os << "(" << lhs << ")";
+            }else{
+                os << lhs;
+            }
+            os << "^";
+            if(rhs.precedence() > precedence()){
+                os << "(" << rhs << ")";
+            }else{
+                os << rhs;
+            }
+        }
+
+        virtual int precedence() const override {
+            return PRECEDENCE_EXPONENT;
+        }
+
+        virtual equation<T> simplify() const override {
+            auto l = lhs.simplify();
+            auto r = rhs.simplify();
+            if(l.eq->is_constant()){
+                if(l() == 0){
+                    return equation(new constant<T>(0));
+                }else if(l() == 1){
+                    return equation(new constant<T>(1));
+                }else if(r.eq->is_constant()){
+                    return equation(new constant(std::pow(l(), r())));
+                }
+            }else if(r.eq->is_constant()){
+                if(r() == 0){
+                    return equation(new constant<T>(1));
+                }else if(r() == 1){
+                    return l;
+                }
+            }
+            return l.eq->pow(*r.eq);
+        }
+
+        virtual equation<T> derivative(const symbol<T>& d) const override {
+            if(rhs.eq->is_constant() && rhs() > 0){
+                return (rhs * lhs.pow(rhs - constant<T>(1))).simplify();
+            }else{
+                return (lhs.pow(rhs) * ((lhs.derivative(d) * (rhs / lhs)) + (rhs.derivative(d) * new operation_log<T>(lhs.eq)))).simplify();
+            }
         }
 
     protected:
@@ -369,7 +691,7 @@ class symbol : public base_equation<T> {
         {}
 
         bool operator==(const symbol<T>& rhs) const {
-            return this == &rhs;
+            return this->name == rhs.name;
         }
 
         void operator=(const T& v) {
@@ -386,6 +708,10 @@ class symbol : public base_equation<T> {
 
         virtual void print(std::ostream& os) const override {
             os << name;
+        }
+
+        virtual int precedence() const override {
+            return PRECEDENCE_PARENTHESIS;
         }
 
         virtual equation<T> simplify() const override {
@@ -433,6 +759,10 @@ class constant : public base_equation<T> {
             os << value;
         }
 
+        virtual int precedence() const override {
+            return PRECEDENCE_PARENTHESIS;
+        }
+
         virtual equation<T> simplify() const override {
             return equation(this);
         }
@@ -444,6 +774,15 @@ class constant : public base_equation<T> {
     protected:
         T value;
 };
+
+/**
+ * User-defined literal operator.
+ * @param x Literal.
+ * @return Symbolic constant.
+ */
+constant<double> operator""_sym(long double x) {
+    return constant(static_cast<double>(x));
+}
 
 } // namespace equation
 } // namespace tmp
