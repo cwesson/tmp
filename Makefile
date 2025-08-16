@@ -1,10 +1,10 @@
 
 INCLUDE := include/ test/cpputest/include/
-SRCS := src/bigint.cpp unittest.cpp test/biginttest.cpp test/complextest.cpp test/rationaltest.cpp test/tmathtest.cpp test/modinttest.cpp test/fixedtest.cpp test/mininttest.cpp test/comparetest.cpp test/lfsrtest.cpp test/listtest.cpp test/smathtest.cpp
+SRCS := src/bigint.cpp unittest.cpp test/biginttest.cpp test/complextest.cpp test/rationaltest.cpp test/tmathtest.cpp test/oneoftest.cpp test/modinttest.cpp test/fixedtest.cpp test/mininttest.cpp test/comparetest.cpp test/lfsrtest.cpp test/listtest.cpp test/smathtest.cpp
 CPPUTESTLIB := test/cpputest/src/CppUTest/libCppUTest.a
 
 CPP := g++
-CPPFLAGS := -std=c++2b -g $(addprefix -I,$(INCLUDE))
+CPPFLAGS := -g $(addprefix -I,$(INCLUDE)) -DCPPUTEST_MEM_LEAK_DETECTION_DISABLED
 LD := g++
 LDARGS := 
 OBJS := $(addsuffix .o,$(addprefix bin/,$(basename $(SRCS))))
