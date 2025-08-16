@@ -193,14 +193,21 @@ class modint {
 		/**
 		 * Stream Output.
 		 */
-		friend std::ostream& operator<<(std::ostream& os, const modintT& rhs){
-			os << static_cast<unsigned long long>(rhs.value);
-			return os;
-		}
+		template<unsigned long long M>
+		friend std::ostream& operator<<(std::ostream& os, const modint<M>& rhs);
 	
 	private:
 		storageT value;
 };
+
+/**
+ * Stream Output.
+ */
+template<unsigned long long MOD>
+std::ostream& operator<<(std::ostream& os, const modint<MOD>& rhs){
+	os << rhs.value;
+	return os;
+}
 
 } // namespace tmp
 
